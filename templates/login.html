@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+.portal-container {
+    max-width: 800px;
+    margin: 0px auto;
+    padding: 30px;
+}
+
+.portal-cards {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 50px;
+}
+
+.portal-card {
+    flex: 1;
+    max-width: 300px;
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+}
+
+.portal-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.portal-icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+}
+
+.portal-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: var(--text-dark);
+}
+
+.portal-description {
+    color: #666;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+}
+
+.portal-button {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 5px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.portal-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(199, 31, 31, 0.2);
+    color: white;
+}
+
+</style>
+
+<div class="portal-container">
+    <h2 class="text-center mb-4">Choose Your Login Portal</h2>
+    <div class="portal-cards">
+        <!-- Regular User Portal -->
+        <div class="portal-card" onclick="window.location.href='{{ url_for('user_login') }}'">
+            <div class="portal-icon">
+                <i class="fas fa-user"></i>
+            </div>
+            <h3 class="portal-title">User Portal</h3>
+            <p class="portal-description">
+                Access your personal account to read exclusive news, manage your subscriptions, and customize your news feed.
+            </p>
+            <a href="{{ url_for('user_login') }}" class="portal-button">
+                Login as User
+            </a>
+        </div>
+
+        <!-- Customer Portal -->
+        <div class="portal-card" onclick="window.location.href='{{ url_for('customer_login') }}'">
+            <div class="portal-icon">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <h3 class="portal-title">Customer Portal</h3>
+            <p class="portal-description">
+                Secure access for GNN customers. Manage your business account, access advanced features, and view analytics.
+            </p>
+            <a href="{{ url_for('customer_login') }}" class="portal-button">
+                Login as Customer
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
