@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-shopping-cart"></i> Shopping Cart</h5>
+                </div>
+                <div class="card-body">
+                    {% if cart_items %}
+                    {% for cart_item in cart_items %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h6 class="mb-0">{{ cart_item[0] }}</h6>
+                            <small class="text-muted">
+                                <small class="text-muted">
+                                    Quantity: 
+                                    <input type="number" 
+                                           value="{{ cart_item[2] }}" 
+                                           min="1" 
+                                           max="99"
+                                           onchange="updateQuantity({{ cart_item[3] }}, this.value)"
+                                           style="width: 60px;">
+                                </small>
+                        </div>
+                        <div class="text-end">
+                            <h6 class="mb-0">${{ "%.2f"|format(cart_item[1]) }}</h6>
+                            <button onclick="removeFromCart({{ cart_item[3] }})" class="btn btn-sm btn-danger">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% if not loop.last %}
+                        <hr>
+                    {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <p class="text-center mb-0">Your cart is empty</p>
+                {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-receipt"></i> Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Current Balance:</span>
+                            <span>${{ "%.2f"|format(balance) }}</span>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>Cart Total:</span>
+                                <span id="cartTotal">${{ "%.2f"|format(cart_total) }}</span>
+                            </div>
+                            <div id="discountedTotal" style="display: none;">
+                                <span>Total After Discount (30% off):</span>
+                                <span id="discountedAmount"></span>
+                            </div>
+                        </div>
+                    <div class="mb-3">
+                        <label for="discount" class="form-label">Discount Code:</label>
+                        <input type="text" class="form-control" id="discount" placeholder="Enter code">
+                        <small class="text-muted">To celebrate our third anniversity we are offering 30% discount. Use the code: 3YEARGNN</small>
+                    </div>
+                    <button onclick="checkout()" class="btn btn-danger w-100">
+                        <i class="fas fa-lock"></i> Checkout
+                    </button>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateCartTotal() {
+    const discountCode = document.getElementById('discount').value;
+    const cartTotal = {{ cart_total }};
+    
+    if(discountCode === '3YEARGNN') {
+        const discounted = cartTotal * 0.7;
+        document.getElementById('discountedTotal').style.display = 'block';
+        document.getElementById('discountedAmount').textContent = `$${discounted.toFixed(2)}`;
+    } else {
+        document.getElementById('discountedTotal').style.display = 'none';
+    }
+}
+
+document.getElementById('discount').addEventListener('input', updateCartTotal);
+
+function removeFromCart(itemId) {
+    fetch('/remove-from-cart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `item_id=${itemId}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.success) {
+            window.location.reload();
+        }
+    });
+}
+
+function checkout() {
+    const discountCode = document.getElementById('discount').value;
+    
+    fetch('/checkout', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `discount_code=${discountCode}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.success) {
+            if(data.transaction_id) {
+                localStorage.setItem('last_transaction', data.transaction_id);
+            }
+            showToast('Purchase successful!');
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showToast(data.error);
+        }
+    });
+}
+
+function updateQuantity(itemId, quantity) {
+    fetch('/update-quantity', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `item_id=${itemId}&quantity=${quantity}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.success) {
+            window.location.reload();
+        } else {
+            showToast(data.error);
+        }
+    });
+}
+</script>
+{% endblock %}

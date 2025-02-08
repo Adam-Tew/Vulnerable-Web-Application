@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global News Network</title>
+
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+    <!-- React Scripts -->
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+
+    <!-- Theme Check Script -->
+    <script>
+        const themeCookie = document.cookie.split(';').find(c => c.trim().startsWith('remember_theme='));
+        if (themeCookie) {
+            document.documentElement.setAttribute('data-theme', 'light');
+
+            fetch('/check-theme', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `theme_data=${encodeURIComponent(themeCookie.split('=')[1])}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success' && data.data && data.data.includes(':dark:')) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    document.body.setAttribute('data-theme', 'dark');
+                }
+            });
+        }
+    </script>
+
+    <!-- Your styles -->
+    <style>
+        :root {
+            --primary-color: #c71f1f;
+            --secondary-color: #8b0000;
+            --accent-color: #e63946;
+            --dark-accent: #2b2024;
+            --text-light: #ffffff;
+            --text-dark: #333333;
+            --background-light: #f8f9fa;
+
+            /* Dark mode variables */
+            --dark-background: #121212;
+            --dark-card-background: #1e1e1e;
+            --dark-text: #ff0000;  /* Changed from #ff0000 to white for better readability */
+        }
+
+        /* Update your dark mode styles section */
+        [data-theme="dark"] {
+            background-color: var(--dark-background);
+            color: var(--dark-text);
+        }
+
+        [data-theme="dark"] .card {
+            background-color: var(--dark-card-background);
+            color: var(--dark-text);
+        }
+
+        [data-theme="dark"] body {
+            background-color: var(--dark-background);
+            color: var(--dark-text);
+        }
+
+        /* Stock market text specific styles */
+        .stock-market-text {
+            color: #000000 !important;
+        }
+
+        [data-theme="dark"] .stock-market-text,
+        [data-theme="dark"] .market-status-text {
+            color: #000000 !important;
+        }
+
+        body {
+            background-color: var(--background-light);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Theme switch styles */
+        .theme-switch-wrapper {
+            display: flex;
+            align-items: center;
+            margin-right: 1rem;
+            gap: 8px;
+        }
+
+        .theme-switch {
+            display: inline-block;
+            height: 24px;
+            position: relative;
+            width: 48px;
+        }
+
+        .theme-switch input {
+            display: none;
+        }
+
+        .theme-switch-label {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .slider {
+            background-color: rgba(255, 255, 255, 0.2);
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            background-color: white;
+            bottom: 2px;
+            content: "";
+            height: 20px;
+            left: 2px;
+            position: absolute;
+            transition: .4s;
+            width: 20px;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        #banner-header {
+            width: 100%;
+            height: 20vh; /*Changes the banner height*/
+            background: url('{{ url_for('static', filename='images/gnn3.jpg') }}') center;
+            background-size: cover;
+            position: relative;
+        }
+
+        #banner-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.7));
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+            padding: 0 !important; /* Make navbar thinner */
+        }
+
+        .navbar-brand {
+            color: var(--text-light) !important;
+            font-weight: 700;
+            font-size: 1.75rem;
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.9) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        .nav-link:hover {
+            color: var(--text-light) !important;
+            background-color: rgba(255,255,255,0.1);
+            transform: translateY(-1px);
+        }
+
+        .nav-link i {
+            margin-right: 0.5rem;
+            font-size: 0.9em;
+        }
+
+        .card {
+            border: none;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+        .footer {
+            background: var(--dark-accent);
+            color: rgba(255,255,255,0.9);
+            padding: 1.5rem 0;
+            margin-top: 3rem;
+            position: relative;
+        }
+
+        .footer p {
+            margin: 0;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .btn-danger {
+            background-color: var(--accent-color);
+            border: none;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .btn-danger:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(220, 53, 69, 0.2);
+        }
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            z-index: 1000;
+            color: #28a745;  /* Bootstrap's green color */
+        }
+
+        .toast-notification.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Dropdown styles */
+        /* Enable hover dropdown */
+        .navbar .nav-item.dropdown:hover > .dropdown-menu {
+            display: block;
+        }
+
+        /* Add small delay before dropdown disappears */
+        .navbar .dropdown-menu {
+            display: none;
+            margin-top: 0;
+            animation: fadeIn 0.2s ease-in;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 4px;
+            padding: 0.5rem 0;
+        }
+
+        /* Smooth fade in animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Remove dropdown arrow since we don't need it for hover */
+        .nav-link.dropdown-toggle::after {
+            display: none;
+        }
+        .dropdown-item {
+            color: rgba(255,255,255,0.9) !important;
+            padding: 0.35rem 1rem;
+            transition: all 0.3s ease;
+        }
+        /* Ensure dropdown items maintain hover effect */
+        .dropdown-item:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: var(--text-light) !important;
+        }
+
+        /* Dark mode adaptation for dropdown */
+        [data-theme="dark"] .dropdown-menu {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+    </style>
+</head>
+
+<body>
+    <div id="toast" class="toast-notification">
+        <span id="toastMessage"></span>
+    </div>
+
+    <header>
+        <div id="banner-header"></div>
+    </header>
+
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <!-- Dark mode toggle switch -->
+            <div class="theme-switch-wrapper">
+                <label class="theme-switch">
+                    <input type="checkbox" id="darkModeToggle">
+                    <span class="slider"></span>
+                </label>
+                <span class="theme-switch-label"><i class="fas fa-lightbulb"></i>  Mode</span>
+            </div>
+
+            <a class="navbar-brand" href="/">
+                Global News Network
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <!-- News Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#">
+                            <i class="fas fa-newspaper"></i>News
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/news-article">News</a></li>
+                            <li><a class="dropdown-item" href="/archive-search">Archive</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- About Us Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#">
+                            <i class="fas fa-info-circle"></i>About Us
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/services">Services</a></li>
+                            <li><a class="dropdown-item" href="/contacts">Contacts</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Profile Section -->
+                    <li class="nav-item dropdown">
+                        {% if session.get('authenticated') %}
+                            <a class="nav-link" href="/customer-dashboard">
+                                <i class="fas fa-building"></i>Cust. Profile
+                            </a>
+                        {% elif session.get('logged_in') %}
+                            <a class="nav-link" href="/profile">
+                                <i class="fas fa-user"></i>Profile
+                            </a>
+                        {% else %}
+                            <a class="nav-link dropdown-toggle" href="#">
+                                <i class="fas fa-user"></i>Login
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/user-login"><i class="fas fa-user me-2"></i>User Login</a></li>
+                                <li><a class="dropdown-item" href="/customer-login"><i class="fas fa-user-tie me-2"></i>Customer Login</a></li>
+                                <li><a class="dropdown-item" href="/it-login"><i class="fas fa-tools me-2"></i>IT Login</a></li>
+                            </ul>
+                        {% endif %}
+                    </li>
+
+                    <!-- Cart (only shown when logged in) -->
+                    {% if session.get('logged_in') %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/cart">
+                                <i class="fas fa-shopping-cart"></i>Cart
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    <!-- Flags -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="/flag">
+                            <i class="fas fa-flag"></i>Flags
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container py-2">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container d-flex justify-content-center align-items-center position-relative">
+            <form id="resetLabForm" action="{{ url_for('reset_lab') }}" method="post" class="position-absolute start-0">
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#resetLabModal">
+                    Reset Lab
+                </button>
+            </form>
+            <p>&copy; 2024 Global News Network. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Lab Reset Modal -->
+    <div class="modal fade" id="resetLabModal" tabindex="-1" aria-labelledby="resetLabModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="resetLabModalLabel">⚠️ Reset Lab Confirmation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <strong>Are you sure you want to reset the lab?</strong>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-flag"></i> <strong>Note:</strong> Found flags will not be reset.
+                    </div>
+                    <p>Resetting the lab will:</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-group">
+                                <li class="list-group-item">🔄 Clear IP rate limiting state</li>
+                                <li class="list-group-item">🍪 Clear cookies and sessions</li>
+                                <li class="list-group-item">💾 Reset database states</li>
+                                <li class="list-group-item">🔒 Reset app secret key</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-group">
+                                <li class="list-group-item">📁 Clear virtual files</li>
+                                <li class="list-group-item">🌐 Clear global variables</li>
+                                <li class="list-group-item">🔍 Reset all tracking states</li>
+                                <li class="list-group-item">🔐 Clear authentication data</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-group">
+                                <li class="list-group-item">💰 Reset all user balances to $100</li>
+                                <li class="list-group-item">🛒 Clear all shopping carts</li>
+                                <li class="list-group-item">🎁 Delete all gift card codes</li>
+                                <li class="list-group-item">📜 Clear purchase history</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <label for="resetConfirmation" class="form-label">
+                            If you want to reset the lab, type 'reset' without the quotes in the field below:
+                        </label>
+                        <input type="text" class="form-control" id="resetConfirmation"
+                               placeholder="Type 'reset' to confirm">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmResetBtn" disabled>
+                        Yes, I want to reset the lab
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts at the end of body -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM loaded");
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            console.log("Toggle element:", darkModeToggle);
+
+            if (!darkModeToggle) {
+                console.error("Dark mode toggle not found!");
+                return;
+            }
+
+            // Check cookie first
+            const themeCookie = document.cookie.split(';').find(c => c.trim().startsWith('remember_theme='));
+            if (themeCookie) {
+                fetch('/check-theme', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `theme_data=${encodeURIComponent(themeCookie.split('=')[1])}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Theme check response:', data);
+                    // Changed to check for ":dark:" in the decrypted string
+                    if (data.status === 'success' && data.data && data.data.includes(':dark:')) {
+                        document.documentElement.setAttribute('data-theme', 'dark');
+                        document.body.setAttribute('data-theme', 'dark');
+                        darkModeToggle.checked = true;
+                    }
+                })
+                .catch(error => console.error('Error checking theme:', error));
+            }
+
+            // Single event listener for the toggle
+            darkModeToggle.addEventListener('change', function() {
+                const themeCmd = this.checked ? 'darkmode' : 'lightmode';
+                console.log('Toggle clicked:', themeCmd);
+
+                fetch('/toggle-theme', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `theme=${themeCmd}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Toggle response:', data);
+                    if (data.status === 'success') {
+                        console.log('Setting theme to:', this.checked ? 'dark' : 'light');
+                        document.documentElement.setAttribute('data-theme', this.checked ? 'dark' : 'light');
+                        document.body.setAttribute('data-theme', this.checked ? 'dark' : 'light');
+                        // Remove localStorage since we're using cookies
+                        // localStorage.setItem('darkMode', this.checked ? 'enabled' : 'disabled');
+                    }
+                })
+                .catch(error => console.error('Error toggling theme:', error));
+            });
+        });
+
+        // Toast function
+        function showToast(message, duration = 3000) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, duration);
+        }
+
+        // Reset lab functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const resetConfirmation = document.getElementById('resetConfirmation');
+            const confirmResetBtn = document.getElementById('confirmResetBtn');
+            const resetLabForm = document.getElementById('resetLabForm');
+
+            if (resetConfirmation && confirmResetBtn) {
+                resetConfirmation.addEventListener('input', function() {
+                    confirmResetBtn.disabled = this.value.toLowerCase() !== 'reset';
+                });
+            }
+
+            if (confirmResetBtn && resetLabForm) {
+                confirmResetBtn.addEventListener('click', function() {
+                    resetLabForm.submit();
+                });
+            }
+        });
+    </script>
+</body>
+</html>

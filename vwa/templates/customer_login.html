@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Preload critical assets -->
+<link rel="preload" href="{{ url_for('static', filename='css/customer_login.css') }}" as="style">
+<link rel="preload" href="{{ url_for('static', filename='background/customer.jpg') }}" as="image">
+
+<!-- Main stylesheet -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/customer_login.css') }}">
+
+<!-- Background container for better performance -->
+<div class="background-container"></div>
+
+<!-- Main content wrapper -->
+<div class="content-wrapper">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-7">
+                <div class="customer-login-container">
+                    <div class="customer-login-card">
+                        <div class="customer-header">
+                            <svg class="customer-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 21V8l9-6 9 6v13H3zm10-1h8V9l-8-5-8 5v11h8v-3h-2v-2h2v-2h-2v-2h4v7z" fill="white"/>
+                            </svg>
+                            <h3 class="mb-2">Business Customer Portal</h3>
+                            <p class="mb-0">Access your business dashboard</p>
+                        </div>
+                        
+                        <div class="card-body p-4">
+                            {% if error %}
+                                <div class="alert alert-danger" role="alert">
+                                    {{ error }}
+                                </div>
+                            {% endif %}
+
+                            <form action="{{ url_for('customer_login') }}" method="post" id="customer-login-form">
+                                <div class="form-group mb-4">
+                                    <label class="form-label fw-bold">Business Username</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-transparent border-end-0">
+                                            &#128100;
+                                        </span>
+                                        <input type="text" name="emp_username" class="form-control-customer border-start-0" value="{{ emp_username }}" required>
+                                    </div>
+                                </div>
+                                <div class="form-group mb-4">
+                                    <label class="form-label fw-bold">Business Password</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-transparent border-end-0">
+                                            &#128274;
+                                        </span>
+                                        <input type="password" name="emp_password" class="form-control-customer border-start-0" required>
+                                    </div>
+                                </div>
+
+                                {% if show_2fa %}
+                                <div class="two-fa-section">
+                                    <div class="alert alert-success text-center mb-3" role="alert">
+                                        <strong>Flag:</strong> flag[u53rn4m3-3num3r4710n-v14-r35p0n53-71m1n6]
+                                    </div>
+                                    <div class="form-group mb-3">
+                                        <label class="form-label fw-bold">2FA Verification Code</label>
+                                        <input type="text" name="emp_code" class="form-control-customer" placeholder="Enter two-digit code" required>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input type="checkbox" name="stay_logged_in" class="form-check-input" value="1">
+                                        <label class="form-check-label">Keep me signed in</label>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <button type="submit" class="btn btn-customer-login w-100">Access Dashboard</button>
+                            </form>
+
+                            <div class="text-center mt-4">
+                                <small>Need a Business Account? <a href="{{ url_for('register') }}" class="text-danger fw-bold">Apply here</a></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Optimized background image loading
+document.addEventListener('DOMContentLoaded', function() {
+    const bgContainer = document.querySelector('.background-container');
+    
+    // Create a low-quality placeholder background
+    bgContainer.style.backgroundColor = '#f0f0f0';
+    bgContainer.style.opacity = '1';
+
+    // Load the actual background image
+    const img = new Image();
+    img.onload = function() {
+        bgContainer.style.backgroundImage = `url('${img.src}')`;
+        bgContainer.style.backgroundSize = 'cover';
+        bgContainer.style.backgroundPosition = 'center';
+        bgContainer.style.backgroundRepeat = 'no-repeat';
+        requestAnimationFrame(() => {
+            bgContainer.style.opacity = '1';
+        });
+    };
+    
+    img.onerror = function() {
+        console.error('Failed to load background image');
+        bgContainer.style.backgroundColor = '#f0f0f0';
+    };
+
+    if ('loading' in HTMLImageElement.prototype) {
+        img.loading = 'lazy';
+    }
+    
+    img.src = "{{ url_for('static', filename='background/customer.jpg') }}";
+});
+</script>
+{% endblock %}

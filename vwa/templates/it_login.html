@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Preload critical assets -->
+<link rel="preload" href="{{ url_for('static', filename='css/it_login.css') }}" as="style">
+<link rel="preload" href="{{ url_for('static', filename='background/it.jpg') }}" as="image">
+
+<!-- Main stylesheet -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/it_login.css') }}">
+
+<!-- Background container for better performance -->
+<div class="background-container"></div>
+
+<!-- Main content wrapper -->
+<div class="content-wrapper">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="it-login-container">
+                    <div class="it-login-card">
+                        <div class="it-header">
+                            <i class="fas fa-terminal it-icon"></i>
+                            <h3>IT Administration Portal</h3>
+                            <div class="terminal-effect" id="terminalText">
+                                > Secure Access Required_
+                            </div>
+                        </div>
+                        
+                        <div class="card-body p-4">
+                            {% if error %}
+                                <div class="alert alert-danger" role="alert">
+                                    {{ error }}
+                                </div>
+                            {% endif %}
+
+                            <div class="security-notice">
+                                <i class="fas fa-shield-alt me-2"></i>
+                                This portal is restricted to authorized IT personnel only.
+                            </div>
+
+                            <form method="POST" action="{{ url_for('it_login') }}">
+                                {% if not show_key %}
+                                    <div class="form-group mb-4">
+                                        <label class="form-label">System Username</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-dark border-0">
+                                                <i class="fas fa-user-shield text-light"></i>
+                                            </span>
+                                            <input type="text" name="username" class="form-control-it" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group mb-4">
+                                        <label class="form-label">System Password</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-dark border-0">
+                                                <i class="fas fa-key text-light"></i>
+                                            </span>
+                                            <input type="password" name="password" class="form-control-it" required>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="form-group mb-4">
+                                        <label class="form-label">Security Key Authentication</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-dark border-0">
+                                                <i class="fas fa-fingerprint text-light"></i>
+                                            </span>
+                                            <input type="password" name="security_key" class="form-control-it" required>
+                                        </div>
+                                        <small class="text-muted">Enter your IT security authentication key</small>
+                                    </div>
+                                {% endif %}
+                                
+                                <button type="submit" class="btn btn-it-login w-100">
+                                    <i class="fas fa-arrow-right me-2"></i>Authenticate Access
+                                </button>
+                            </form>
+
+                            <div class="mt-4 text-center text-muted">
+                                <small>
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    For security assistance, contact your system administrator
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Optimized background image loading
+document.addEventListener('DOMContentLoaded', function() {
+    const bgContainer = document.querySelector('.background-container');
+    
+    // Create a low-quality placeholder background
+    bgContainer.style.backgroundColor = '#1a1a1a';
+    bgContainer.style.opacity = '1';
+
+    // Load the actual background image
+    const img = new Image();
+    img.onload = function() {
+        bgContainer.style.backgroundImage = `url('${img.src}')`;
+        bgContainer.style.backgroundSize = 'cover';
+        bgContainer.style.backgroundPosition = 'center';
+        bgContainer.style.backgroundRepeat = 'no-repeat';
+        requestAnimationFrame(() => {
+            bgContainer.style.opacity = '1';
+        });
+    };
+    
+    img.onerror = function() {
+        console.error('Failed to load background image');
+        bgContainer.style.backgroundColor = '#1a1a1a';
+    };
+
+    if ('loading' in HTMLImageElement.prototype) {
+        img.loading = 'lazy';
+    }
+    
+    img.src = "{{ url_for('static', filename='background/it.jpg') }}";
+});
+
+// Terminal effect animation
+document.addEventListener('DOMContentLoaded', function() {
+    const terminalText = document.getElementById('terminalText');
+    let blinkState = true;
+    
+    setInterval(() => {
+        blinkState = !blinkState;
+        terminalText.innerHTML = `> Secure Access Required${blinkState ? '_' : ' '}`;
+    }, 500);
+});
+
+// Optimize scroll performance
+let ticking = false;
+window.addEventListener('scroll', function() {
+    if (!ticking) {
+        window.requestAnimationFrame(function() {
+            ticking = false;
+        });
+        ticking = true;
+    }
+});
+</script>
+{% endblock %}

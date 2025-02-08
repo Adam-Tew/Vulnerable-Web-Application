@@ -1,0 +1,126 @@
+/* Base optimizations */
+* {
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Background container */
+.background-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    background-color: #f0f0f0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Content wrapper */
+.content-wrapper {
+    position: relative;
+    z-index: 1;
+    min-height: 10vh;
+    padding: 20px;
+    transform: translate3d(0,0,0);
+}
+
+/* Main styles */
+.user-login-container {
+    background: rgba(255,255,255,0.1);
+    border-radius: 15px;
+    padding: 20px;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    transform: translate3d(0,0,0);
+}
+
+.user-login-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(199, 31, 31, 0.1);
+    transform: translate3d(0,0,0);
+    transition: transform 0.2s ease;
+    will-change: transform;
+}
+
+.user-login-card:hover {
+    transform: translateY(-5px);
+}
+
+.user-header {
+    text-align: center;
+    padding: 2rem 0;
+    border-bottom: 1px solid rgba(199, 31, 31, 0.1);
+    margin-bottom: 1.5rem;
+}
+
+.user-icon {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 0.75rem;
+}
+
+.form-control {
+    border: 1px solid rgba(199, 31, 31, 0.1);
+    border-radius: 8px;
+    padding: 0.8rem;
+    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(199, 31, 31, 0.1);
+    background: rgba(255, 255, 255, 1);
+}
+
+.btn-user-login {
+    background: var(--primary-color);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: transform 0.2s ease;
+    color: white;
+    transform: translate3d(0,0,0);
+}
+
+.btn-user-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(199, 31, 31, 0.2);
+}
+
+/* Responsive optimizations */
+@media (max-width: 768px) {
+    .user-login-container {
+        padding: 15px;
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+    }
+    
+    .user-login-card {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+    
+    .user-header {
+        padding: 1.5rem 0;
+    }
+}
+
+/* Progressive enhancement */
+@supports not (backdrop-filter: blur(3px)) {
+    .user-login-container {
+        background: rgba(255, 255, 255, 0.3);
+    }
+}
+
+/* iOS optimizations */
+@supports (-webkit-overflow-scrolling: touch) {
+    .content-wrapper {
+        -webkit-overflow-scrolling: touch;
+    }
+}

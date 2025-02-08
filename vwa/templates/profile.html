@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .profile-tabs.nav-tabs .nav-link {
+        color: var(--text-dark) !important;
+        background-color: rgba(255,255,255,0.8);
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .profile-tabs.nav-tabs .nav-link.active {
+        color: var(--text-light) !important;
+        background-color: var(--primary-color);
+    }
+    .nav-tabs {
+        border-bottom: 1px solid var(--primary-color);
+        background-color: var(--background-light);
+        width: 100%;
+        display: flex;
+    }
+    
+    .nav-tabs .nav-item {
+        margin-bottom: -1px;
+        visibility: visible !important;
+    }
+    
+    .nav-tabs .nav-link {
+        color: var(--text-dark);
+        border: 1px solid transparent;
+        padding: .5rem 1rem;
+        margin-right: 2px;
+    }
+    
+    .nav-tabs .nav-link:hover {
+        color: var(--text-light);
+        background-color: var(--secondary-color);
+    }
+    
+    .nav-tabs .nav-link.active {
+        color: var(--text-light);
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    [data-theme="dark"] .nav-tabs {
+        background-color: var(--dark-background);
+    }
+    
+    [data-theme="dark"] .nav-tabs .nav-link {
+        color: var(--text-light);
+    }
+    </style>
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a href="/logout" class="btn btn-danger">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
+
+    {% if username == 'ad' or username == 'autodiscover' %}
+    <div class="alert alert-success text-center" role="alert">
+        <strong>Congratulations!</strong>
+        {% if username == 'ad' %}
+            Here's a flag: flag[u53rn4m3-3num3r4710n-v14-5ub7ly-d1ff3r3n7-r35p0n535]
+        {% else %}
+            Here's a flag: flag[p455w0rd-bru73-f0rc3-v14-p455w0rd-ch4n63]
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <ul class="nav nav-tabs profile-tabs mb-4" id="profileTabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#home" role="tab">
+                <i class="fas fa-home"></i> Home
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="history-tab" data-bs-toggle="tab" href="#history" role="tab">
+                <i class="fas fa-history"></i> Purchase History
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="redeem-tab" data-bs-toggle="tab" href="#redeem" role="tab">
+                <i class="fas fa-gift"></i> Redeem
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="settings-tab" data-bs-toggle="tab" href="#settings" role="tab">
+                <i class="fas fa-cog"></i> Settings
+            </a>
+        </li>
+        {% if admin_panel %}
+        <li class="nav-item">
+            <a class="nav-link" id="admin-tab" data-bs-toggle="tab" href="#admin" role="tab">
+                <i class="fas fa-shield-alt"></i> Admin
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+
+    <div class="tab-content" id="profileTabsContent">
+        <!-- Home Tab -->
+        <div class="tab-pane fade show active" id="home" role="tabpanel">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h2 class="mb-4">Welcome, {{ username }}!</h2>
+                    <div class="display-4 mb-3">
+                        <i class="fas fa-wallet text-success"></i>
+                        <div>Current Balance</div>
+                        <div>${{ "%.2f"|format(balance) }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Purchase History Tab -->
+        <div class="tab-pane fade" id="history" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-center mb-4">Purchase History</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <button onclick="copyGiftCodes()" class="btn btn-primary mb-3">
+                                <i class="fas fa-copy"></i> Copy Unused Gift Card Codes
+                            </button>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Item</th>
+                                    <th>Amount</th>
+                                    <th>Code</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for purchase in purchases %}
+                                <tr>
+                                    <td>{{ purchase[0] }}</td>
+                                    <td>{{ purchase[1] }}</td>
+                                    <td>${{ "%.2f"|format(purchase[2]) if purchase[2] is not none else '0.00' }}</td>
+                                    <td data-used="{{ purchase[4] }}">{{ purchase[3] if purchase[3] else '-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-center mt-4">
+                        <nav aria-label="Purchase history pages">
+                            <ul class="pagination">
+                                {% if current_page > 1 %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('profile', page=current_page-1) }}#history">Previous</a>
+                                </li>
+                                {% endif %}
+
+                                {% for page in range(1, total_pages + 1) %}
+                                <li class="page-item {% if page == current_page %}active{% endif %}">
+                                    <a class="page-link" href="{{ url_for('profile', page=page) }}#history">{{ page }}</a>
+                                </li>
+                                {% endfor %}
+
+                                {% if current_page < total_pages %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('profile', page=current_page+1) }}#history">Next</a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Redeem Tab -->
+        <div class="tab-pane fade" id="redeem" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-center">Redeem Gift Card</h5>
+                    <div class="text-center mb-3">
+                        <h6>Current Balance: ${{ balance }}</h6>
+                    </div>
+                    <form id="giftCardForm" onsubmit="event.preventDefault(); redeemGiftCard();">
+                        <div class="form-group mb-3">
+                            <input type="text" id="gift_code" class="form-control" placeholder="Enter Gift Card Code" required>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">Redeem</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div class="tab-pane fade" id="settings" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-center">Reset Your Password</h5>
+                    {% if error %}
+                        <div class="alert alert-danger" role="alert">{{ error }}</div>
+                    {% endif %}
+                    {% if success %}
+                        <div class="alert alert-success" role="alert">{{ success }}</div>
+                    {% endif %}
+                    <form method="POST" action="/profile">
+                        <input type="text" name="encoded_username" value="{{ encoded_username }}" style="width:0;border:none;opacity:0;position:absolute;">
+                        <div class="form-group mb-3">
+                            <label for="new_password">New Password</label>
+                            <input type="password" id="new_password" name="new_password" class="form-control" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="confirm_new_password">Confirm New Password</label>
+                            <input type="password" id="confirm_new_password" name="confirm_new_password" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Reset Password</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% if admin_panel %}
+        <div class="tab-pane fade" id="admin" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Admin Panel</h3>
+                </div>
+                <div class="card-body">
+                    <p>Congratulations! Here's your flag: {{ flag }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function redeemGiftCard() {
+    const code = document.getElementById('gift_code').value;
+
+    fetch('/redeem-gift-card', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'code=' + encodeURIComponent(code)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.success) {
+            showToast(`Successfully redeemed $${data.amount}!`);
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showToast(data.error || 'Failed to redeem code');
+        }
+    });
+}
+
+function copyGiftCodes() {
+    // Fetch all unused gift card codes from the server
+    fetch('/get-all-gift-codes', {
+        method: 'GET',
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.codes && data.codes.length > 0) {
+            const codes = data.codes.join('\n');
+            navigator.clipboard.writeText(codes)
+                .then(() => {
+                    showToast(`Copied ${data.codes.length} unused gift card codes!`);
+                    console.log('Copied codes:', codes); // Debug logging
+                })
+                .catch(err => {
+                    console.error('Clipboard error:', err); // Debug logging
+                    showToast('Failed to copy codes');
+                });
+        } else {
+            showToast('No unused gift card codes found');
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching gift codes:', error);
+        showToast('Failed to fetch gift codes');
+    });
+}
+
+// Function to open history tab if URL has #history
+function checkHistoryHash() {
+    if (window.location.hash === '#history') {
+        const historyTab = document.querySelector('#history-tab');
+        const historyPane = document.querySelector('#history');
+
+        document.querySelectorAll('.nav-link').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('show', 'active'));
+
+        historyTab.classList.add('active');
+        historyPane.classList.add('show', 'active');
+    }
+}
+
+// Run on page load and when hash changes
+window.addEventListener('load', checkHistoryHash);
+window.addEventListener('hashchange', checkHistoryHash);
+
+window.onload = function() {
+    checkHash();
+    showAdminTab();
+};
+
+function showAdminTab() {
+    const adminTab = document.getElementById('admin-tab');
+    const adminPane = document.getElementById('admin');
+
+    if (adminTab && adminPane) {
+        adminTab.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // Remove active class from all tabs and panes
+            document.querySelectorAll('.nav-link').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.remove('show', 'active');
+            });
+
+            // Activate admin tab
+            adminTab.classList.add('active');
+            adminPane.classList.add('show', 'active');
+        });
+    }
+}
+</script>
+{% endblock %}

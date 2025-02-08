@@ -1,0 +1,484 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    /* Unified Canvas Background Styles */
+    .matrix-background,
+    .network-background,
+    .security-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        pointer-events: none;
+        opacity: 0.7;
+    }
+
+    /* Black Box (Matrix) Mode */
+    body.black-mode {
+        background-color: black;
+        color: #00ff41;
+        font-family: 'Courier New', monospace;
+    }
+
+    /* Add a wrapper for the content */
+    .content-wrapper {
+        position: relative;
+        min-height: 100vh;
+        z-index: 1;
+    }
+
+    .black-mode .container {
+        background-color: rgba(0,0,0,0.8);
+        border: 2px solid #00ff41;
+        border-radius: 10px;
+        box-shadow: 0 0 10px #00ff41;
+        margin-bottom: 2rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .black-mode input,
+    .black-mode .btn {
+        background-color: #003300;
+        color: #00ff41;
+        border: 1px solid #00ff41;
+    }
+
+    .black-mode .btn-primary {
+        background-color: #00ff41;
+        color: black;
+    }
+
+    .black-mode .alert {
+        background-color: #003300;
+        color: #00ff41;
+        border-color: #00ff41;
+    }
+
+    /* Grey Mode Improvements */
+    .grey-mode {
+        background-color: #f4f4f4 !important;
+        color: #333;
+    }
+
+    .grey-mode .container {
+        background-color: rgba(244, 244, 244, 0.9);
+        border: 1px solid #aaa;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .grey-mode input,
+    .grey-mode .btn {
+        background-color: #e0e0e0;
+        color: #333;
+        border: 1px solid #888;
+    }
+
+    .grey-mode .btn-primary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .grey-mode .btn-secondary {
+        background-color: #adb5bd;
+        color: white;
+    }
+
+    .grey-mode .alert {
+        background-color: #e9ecef;
+        color: #333;
+        border-color: #ced4da;
+    }
+
+    /* White Mode Improvements */
+    .white-mode {
+        background-color: #f8f9fa !important;
+    }
+
+    .confetti {
+        position: fixed;
+        width: 10px;
+        height: 10px;
+        background-color: #FFD700;
+        animation: confetti-fall 3s linear infinite, confetti-spin 3s linear infinite;
+    }
+
+    @keyframes confetti-fall {
+        from {
+            transform: translateY(-100vh) translateX(0);
+        }
+        to {
+            transform: translateY(100vh) translateX(calc(100vw - 10px));
+        }
+    }
+
+    @keyframes confetti-spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .firework {
+        position: fixed;
+        width: 4px;
+        height: 4px;
+        background-color: transparent;
+        border-radius: 50%;
+        box-shadow: 0 0 5px 5px #FF6347;
+        animation: firework-explode 2s ease-in-out infinite;
+    }
+
+    @keyframes firework-explode {
+        0% {
+            transform: scale(0.1);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.5);
+            opacity: 0.7;
+        }
+        100% {
+            transform: scale(0.1);
+            opacity: 0;
+        }
+    }
+</style>
+
+<div class="container mt-5" id="flagContainer">
+    <!-- Background canvases -->
+    <canvas class="matrix-background" id="matrixCanvas"></canvas>
+    <canvas class="network-background" id="networkCanvas"></canvas>
+    <canvas class="security-background" id="securityCanvas"></canvas>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="row">
+            <div class="col-12">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+    {% endwith %}
+
+    <h1 class="text-center">Flag Tracking System</h1>
+
+    <!-- Flag Submission Form -->
+    <div class="mt-4 text-center">
+        <form method="POST" action="/flag">
+            <div class="mb-3">
+                <label for="flagInput" class="form-label">Enter Flag</label>
+                <input type="text" class="form-control" id="flagInput" name="flag" placeholder="Enter your flag here" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Flag</button>
+        </form>
+    </div>
+
+    <!-- Display Mode Switcher -->
+    <div class="mt-4 text-center">
+        <h3>Penetration Test Types</h3>
+        <form method="POST" action="/flag" class="d-flex justify-content-center">
+            <div class="btn-group" role="group">
+                <input type="submit" name="display_mode" value="black" class="btn btn-{{ 'primary' if mode == 'black' else 'secondary' }}">
+                <input type="submit" name="display_mode" value="grey" class="btn btn-{{ 'primary' if mode == 'grey' else 'secondary' }}">
+                <input type="submit" name="display_mode" value="white" class="btn btn-{{ 'primary' if mode == 'white' else 'secondary' }}">
+            </div>
+        </form>
+    </div>
+
+    <!-- Progress Display -->
+    <div class="mt-5">
+        {% if mode == 'black' %}
+            <h2><u>Black Box</u></h2>
+            <p>Flags Found: <strong>{{ flag_data['total']['sql'] + flag_data['total']['auth'] + flag_data['total']['lfi'] + flag_data['total']['os'] + flag_data['total']['business'] }}/{{ flag_data['total_flags']['sql'] + flag_data['total_flags']['auth'] + flag_data['total_flags']['lfi'] + flag_data['total_flags']['os'] + flag_data['total_flags']['business']}}</strong></p>
+
+        {% elif mode == 'grey' %}
+            <h2><u>Grey Box</u></h2>
+            <ul>
+                <li>SQL Flags: <strong>{{ flag_data['total']['sql'] }}/{{ flag_data['total_flags']['sql'] }}</strong></li>
+                <li>Authentication Flags: <strong>{{ flag_data['total']['auth'] }}/{{ flag_data['total_flags']['auth'] }}</strong></li>
+                <li>LFI Flags: <strong>{{ flag_data['total']['lfi'] }}/{{ flag_data['total_flags']['lfi'] }}</strong></li>
+                <li>OS Flags: <strong>{{ flag_data['total']['os'] }}/{{ flag_data['total_flags']['os'] }}</strong></li>
+                <li>Business Logic Flags: <strong>{{ flag_data['total']['business'] }}/{{ flag_data['total_flags']['business'] }}</strong></li>
+            </ul>
+
+        {% elif mode == 'white' %}
+            <h2><u>White Box</u></h2>
+            <h3>SQL Flags:</h3>
+            <ul>
+                {% for flag in flag_data['details']['sql'] %}
+                    <li>{{ flag.info }}: <strong>{{ 1 if flag.found else 0 }}/1</strong></li>
+                {% endfor %}
+            </ul>
+            <h3>Authentication Flags:</h3>
+            <ul>
+                {% for flag in flag_data['details']['auth'] %}
+                    <li>{{ flag.info }}: <strong>{{ 1 if flag.found else 0 }}/1</strong></li>
+                {% endfor %}
+            </ul>
+            <h3>Local File Inclusion Flags:</h3>
+            <ul>
+                {% for flag in flag_data['details']['lfi'] %}
+                    <li>{{ flag.info }}: <strong>{{ 1 if flag.found else 0 }}/1</strong></li>
+                {% endfor %}
+            </ul>
+            <h3>OS Command Injection Flags:</h3>
+            <ul>
+                {% for flag in flag_data['details']['os'] %}
+                    <li>{{ flag.info }}: <strong>{{ 1 if flag.found else 0 }}/1</strong></li>
+                {% endfor %}
+            </ul>
+            <h3>Business Logic Flags:</h3>
+            <ul>
+                {% for flag in business_flags %}
+                    <li>{{ flag.flag_info }}: <strong>{{ "1" if flag.id in session.found_flags else "0" }}/1</strong></li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+
+    <!-- Reset Progress Button -->
+    <div class="text-center mt-4">
+        <form method="POST" action="/flag/reset">
+            <button type="submit" class="btn btn-danger">Reset Progress</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("DOM Loaded, Current Mode:", "{{ mode }}");
+
+        // Grey Mode - Network Topology Animation
+        function createNetworkAnimation() {
+            console.log("Creating Network Animation");
+            const canvas = document.getElementById('networkCanvas');
+            if (!canvas) {
+                console.error("Network Canvas not found!");
+                return;
+            }
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const nodes = [];
+            const nodeCount = 50;
+            const connectionProbability = 0.1;
+
+            // Create nodes
+            for (let i = 0; i < nodeCount; i++) {
+                nodes.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 10 + 5,
+                    connections: []
+                });
+            }
+
+            // Create connections
+            nodes.forEach(node => {
+                nodes.forEach(otherNode => {
+                    if (node !== otherNode && Math.random() < connectionProbability) {
+                        const distance = Math.sqrt(
+                            Math.pow(node.x - otherNode.x, 2) +
+                            Math.pow(node.y - otherNode.y, 2)
+                        );
+                        if (distance < 200) {
+                            node.connections.push(otherNode);
+                        }
+                    }
+                });
+            });
+
+            function drawNetwork() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Draw connections
+                ctx.strokeStyle = 'rgba(100, 100, 100, 0.3)';
+                nodes.forEach(node => {
+                    node.connections.forEach(connectedNode => {
+                        ctx.beginPath();
+                        ctx.moveTo(node.x, node.y);
+                        ctx.lineTo(connectedNode.x, connectedNode.y);
+                        ctx.stroke();
+                    });
+                });
+
+                // Draw nodes
+                nodes.forEach(node => {
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(100, 100, 100, 0.5)';
+                    ctx.fill();
+                });
+            }
+
+            function animateNetwork() {
+                nodes.forEach(node => {
+                    node.x += (Math.random() - 0.5) * 2;
+                    node.y += (Math.random() - 0.5) * 2;
+
+                    node.x = Math.max(0, Math.min(canvas.width, node.x));
+                    node.y = Math.max(0, Math.min(canvas.height, node.y));
+                });
+
+                drawNetwork();
+                requestAnimationFrame(animateNetwork);
+            }
+
+            animateNetwork();
+        }
+
+        // White Mode - Modern Grid Visualization
+        function createWhiteBoxVisualization() {
+            console.log("Creating White Box Visualization");
+            const canvas = document.getElementById('securityCanvas');
+            if (!canvas) {
+                console.error("Security Canvas not found!");
+                return;
+            }
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const gridSize = 40;
+            const columns = Math.ceil(canvas.width / gridSize);
+            const rows = Math.ceil(canvas.height / gridSize);
+
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, 'rgba(240, 240, 240, 0.3)');
+            gradient.addColorStop(1, 'rgba(250, 250, 250, 0.3)');
+
+            function drawModernGrid() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.strokeStyle = 'rgba(200, 200, 200, 0.2)';
+                ctx.lineWidth = 1;
+
+                // Vertical lines
+                for (let x = 0; x <= columns; x++) {
+                    ctx.beginPath();
+                    ctx.moveTo(x * gridSize, 0);
+                    ctx.lineTo(x * gridSize, canvas.height);
+                    ctx.stroke();
+                }
+
+                // Horizontal lines
+                for (let y = 0; y <= rows; y++) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y * gridSize);
+                    ctx.lineTo(canvas.width, y * gridSize);
+                    ctx.stroke();
+                }
+
+                // Occasional subtle geometric shapes
+                ctx.fillStyle = 'rgba(220, 220, 220, 0.1)';
+                for (let x = 0; x < columns; x += 3) {
+                    for (let y = 0; y < rows; y += 3) {
+                        if (Math.random() < 0.3) {
+                            ctx.beginPath();
+                            ctx.rect(x * gridSize, y * gridSize, gridSize, gridSize);
+                            ctx.fill();
+                        }
+                    }
+                }
+            }
+
+            function animateWhiteBoxGrid() {
+                drawModernGrid();
+                requestAnimationFrame(animateWhiteBoxGrid);
+            }
+
+            animateWhiteBoxGrid();
+        }
+
+        // Set body class and run appropriate animation
+        const mode = "{{ mode }}";
+        console.log("Setting mode class:", mode);
+        document.body.classList.add(`${mode}-mode`);
+
+        if (mode === 'black') {
+            const matrixCanvas = document.getElementById('matrixCanvas');
+            const networkCanvas = document.getElementById('networkCanvas');
+            const securityCanvas = document.getElementById('securityCanvas');
+
+            if (networkCanvas) networkCanvas.style.display = 'none';
+            if (securityCanvas) securityCanvas.style.display = 'none';
+
+            const ctx = matrixCanvas.getContext('2d');
+            matrixCanvas.width = window.innerWidth;
+            matrixCanvas.height = window.innerHeight;
+
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
+            const fontSize = 10;
+            const columns = matrixCanvas.width / fontSize;
+
+            const drops = [];
+            for (let x = 0; x < columns; x++) {
+                drops[x] = 1;
+            }
+
+            function drawMatrix() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+
+                ctx.fillStyle = '#00ff41';
+                ctx.font = `${fontSize}px monospace`;
+
+                for (let i = 0; i < drops.length; i++) {
+                    const text = letters[Math.floor(Math.random() * letters.length)];
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                    if (drops[i] * fontSize > matrixCanvas.height && Math.random() > 0.975)
+                        drops[i] = 0;
+
+                    drops[i]++;
+                }
+            }
+
+            function animateMatrix() {
+                drawMatrix();
+                requestAnimationFrame(animateMatrix);
+            }
+
+            animateMatrix();
+        } else if (mode === 'grey') {
+            console.log("Initializing Grey Mode");
+            const matrixCanvas = document.getElementById('matrixCanvas');
+            const networkCanvas = document.getElementById('networkCanvas');
+            const securityCanvas = document.getElementById('securityCanvas');
+
+            if (matrixCanvas) matrixCanvas.style.display = 'none';
+            if (securityCanvas) securityCanvas.style.display = 'none';
+
+            createNetworkAnimation();
+        } else if (mode === 'white') {
+            console.log("Initializing White Mode");
+            const matrixCanvas = document.getElementById('matrixCanvas');
+            const networkCanvas = document.getElementById('networkCanvas');
+            const securityCanvas = document.getElementById('securityCanvas');
+
+            if (matrixCanvas) matrixCanvas.style.display = 'none';
+            if (networkCanvas) networkCanvas.style.display = 'none';
+
+            createWhiteBoxVisualization();
+        }
+    });
+</script>
+{% endblock %}

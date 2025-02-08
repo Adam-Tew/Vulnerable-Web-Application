@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <div class="admin-header">
+        <h1>Administrator Control Panel</h1>
+        <div class="admin-badge">HIGH CLEARANCE ACCESS</div>
+    </div>
+    
+    <div class="admin-secret-section">
+        <h3>🔒 Classified Information</h3>
+        <div class="encrypted-message">
+            <p>Congratulations on bypassing our encryption! Here's your flag:</p>
+            <div class="flag-container">
+                <code>flag[0r4cl3_Pr3f3r3nc3s_4r3_D4rk_4nd_Full_0f_T3rr0rs]</code>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add some fake admin controls to make it look more realistic -->
+    <div class="admin-controls">
+        <h3>System Controls</h3>
+        <ul>
+            <li>User Management</li>
+            <li>Security Settings</li>
+            <li>Backup Controls</li>
+            <li>System Logs</li>
+        </ul>
+    </div>
+</div>
+
+<style>
+.admin-dashboard {
+    padding: 20px;
+    background: #1a1a1a;
+    border-radius: 8px;
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+}
+
+.admin-header {
+    border-bottom: 2px solid #00ff00;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+}
+
+.admin-badge {
+    display: inline-block;
+    background: #ff0000;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+.admin-secret-section {
+    background: #2a2a2a;
+    padding: 20px;
+    border-radius: 4px;
+    margin: 20px 0;
+    border: 1px solid #00ff00;
+}
+
+.flag-container {
+    background: #000;
+    padding: 15px;
+    border-radius: 4px;
+    margin-top: 10px;
+    border: 1px dashed #00ff00;
+}
+
+.admin-controls {
+    margin-top: 20px;
+}
+
+.admin-controls ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.admin-controls li {
+    padding: 10px;
+    border-bottom: 1px solid #333;
+    cursor: pointer;
+}
+
+.admin-controls li:hover {
+    background: #2a2a2a;
+}
+</style>
+{% endblock %}

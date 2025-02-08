@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.archive-container {
+    max-width: 1200px;
+    margin: 50px auto;
+    padding: 0 30px;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 50px;
+    position: relative;
+    padding-bottom: 15px;
+}
+
+.section-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+.search-container {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 40px;
+}
+
+.search-form {
+    display: flex;
+    gap: 15px;
+}
+
+.search-input {
+    flex: 1;
+    padding: 12px 20px;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(199, 31, 31, 0.1);
+}
+
+.sort-select {
+    padding: 12px 20px;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    min-width: 200px;
+    cursor: pointer;
+}
+
+.sort-select:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.search-button {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.search-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(199, 31, 31, 0.2);
+}
+
+.timeline {
+    position: relative;
+    padding: 40px 0;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: calc(100% - 80px);
+    background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
+}
+
+.article-card {
+    position: relative;
+    width: calc(50% - 30px);
+    margin: 30px 0;
+    padding: 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.article-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.article-card::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    width: 20px;
+    height: 20px;
+    background: var(--primary-color);
+    border-radius: 50%;
+}
+
+.article-card:nth-child(odd) {
+    margin-left: auto;
+}
+
+.article-card:nth-child(odd)::before {
+    left: -40px;
+}
+
+.article-card:nth-child(even)::before {
+    right: -40px;
+}
+
+.article-date {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+}
+
+.article-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--text-dark);
+}
+
+.article-preview {
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.article-author {
+    color: #888;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.cmd-output {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-family: monospace;
+    white-space: pre-wrap;
+}
+
+.no-results {
+    text-align: center;
+    padding: 30px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+    .search-form {
+        flex-direction: column;
+    }
+    
+    .timeline::before {
+        left: 20px;
+    }
+    
+    .article-card {
+        width: calc(100% - 40px);
+        margin-left: 40px !important;
+    }
+    
+    .article-card::before {
+        left: -30px !important;
+    }
+}
+</style>
+
+<div class="archive-container">
+    <h1 class="section-header">
+        <i class="fas fa-archive"></i> News Archive
+    </h1>
+
+    <div class="search-container">
+        {% if cmd_output %}
+        <div class="cmd-output">{{ cmd_output }}</div>
+        {% endif %}
+        
+        <form method="get" class="search-form">
+            <input type="text" 
+                   class="search-input" 
+                   name="search" 
+                   placeholder="Search archived articles..." 
+                   value="{{ request.args.get('search', '') }}">
+            <select class="sort-select" name="sort">
+                <option value="date" {% if request.args.get('sort') == 'date' %}selected{% endif %}>Sort by Date</option>
+                <option value="alpha" {% if request.args.get('sort') == 'alpha' %}selected{% endif %}>Sort Alphabetically</option>
+            </select>
+            <button type="submit" class="search-button">
+                <i class="fas fa-search"></i> Search Archives
+            </button>
+        </form>
+    </div>
+
+    <div class="timeline">
+        {% if articles %}
+            {% for article in articles %}
+            <div class="article-card">
+                <div class="article-date">
+                    <i class="fas fa-calendar-alt"></i> {{ article.timeline }}
+                </div>
+                <h3 class="article-title">{{ article.title }}</h3>
+                <p class="article-preview">{{ article.content[:150] }}...</p>
+                <div class="article-author">
+                    <i class="fas fa-user"></i>
+                    <span>{{ article.author }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-results">
+                <i class="fas fa-info-circle"></i>
+                <h3>No Articles Found</h3>
+                <p>Try adjusting your search criteria or browse our complete archive.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
