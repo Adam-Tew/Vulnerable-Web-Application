@@ -149,6 +149,13 @@
             opacity: 0;
         }
     }
+    .hint-content {
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+        margin-top: 5px;
+        border-left: 3px solid #17a2b8;
+    }
 </style>
 
 <div class="container mt-5" id="flagContainer">
@@ -214,36 +221,111 @@
                 <li>Business Logic Flags: <strong>{{ flag_data['total']['business'] }}/{{ flag_data['total_flags']['business'] }}</strong></li>
             </ul>
 
-        {% elif mode == 'white' %}
+            {% elif mode == 'white' %}
             <h2><u>White Box</u></h2>
+            
             <h3>SQL Flags:</h3>
             <ul>
                 {% for flag in flag_data['details']['sql'] %}
-                    <li>{{ flag.info }}: <strong>{{ 1 if flag.found else 0 }}/1</strong></li>
+                    <li>
+                        {% if flag.hint %}
+                            <button class="btn btn-info btn-sm me-2" 
+                                    onclick="toggleHint('sql_hint_{{ flag.id }}')"
+                                    type="button">
+                                Show Hint
+                            </button>
+                        {% endif %}
+                        {{ flag.info }}: <strong>{{ 1 if flag.found else 0 }}/1</strong>
+                        {% if flag.hint %}
+                            <div id="sql_hint_{{ flag.id }}" class="hint-content mt-2" style="display: none;">
+                                {{ flag.hint }}
+                            </div>
+                        {% endif %}
+                    </li>
                 {% endfor %}
             </ul>
+        
             <h3>Authentication Flags:</h3>
             <ul>
                 {% for flag in flag_data['details']['auth'] %}
-                    <li>{{ flag.info }}: <strong>{{ 1 if flag.found else 0 }}/1</strong></li>
+                    <li>
+                        {% if flag.hint %}
+                            <button class="btn btn-info btn-sm me-2" 
+                                    onclick="toggleHint('auth_hint_{{ flag.id }}')"
+                                    type="button">
+                                Show Hint
+                            </button>
+                        {% endif %}
+                        {{ flag.info }}: <strong>{{ 1 if flag.found else 0 }}/1</strong>
+                        {% if flag.hint %}
+                            <div id="auth_hint_{{ flag.id }}" class="hint-content mt-2" style="display: none;">
+                                {{ flag.hint }}
+                            </div>
+                        {% endif %}
+                    </li>
                 {% endfor %}
             </ul>
+        
             <h3>Local File Inclusion Flags:</h3>
             <ul>
                 {% for flag in flag_data['details']['lfi'] %}
-                    <li>{{ flag.info }}: <strong>{{ 1 if flag.found else 0 }}/1</strong></li>
+                    <li>
+                        {% if flag.hint %}
+                            <button class="btn btn-info btn-sm me-2" 
+                                    onclick="toggleHint('lfi_hint_{{ flag.id }}')"
+                                    type="button">
+                                Show Hint
+                            </button>
+                        {% endif %}
+                        {{ flag.info }}: <strong>{{ 1 if flag.found else 0 }}/1</strong>
+                        {% if flag.hint %}
+                            <div id="lfi_hint_{{ flag.id }}" class="hint-content mt-2" style="display: none;">
+                                {{ flag.hint }}
+                            </div>
+                        {% endif %}
+                    </li>
                 {% endfor %}
             </ul>
+        
             <h3>OS Command Injection Flags:</h3>
             <ul>
                 {% for flag in flag_data['details']['os'] %}
-                    <li>{{ flag.info }}: <strong>{{ 1 if flag.found else 0 }}/1</strong></li>
+                    <li>
+                        {% if flag.hint %}
+                            <button class="btn btn-info btn-sm me-2" 
+                                    onclick="toggleHint('os_hint_{{ flag.id }}')"
+                                    type="button">
+                                Show Hint
+                            </button>
+                        {% endif %}
+                        {{ flag.info }}: <strong>{{ 1 if flag.found else 0 }}/1</strong>
+                        {% if flag.hint %}
+                            <div id="os_hint_{{ flag.id }}" class="hint-content mt-2" style="display: none;">
+                                {{ flag.hint }}
+                            </div>
+                        {% endif %}
+                    </li>
                 {% endfor %}
             </ul>
+        
             <h3>Business Logic Flags:</h3>
             <ul>
-                {% for flag in business_flags %}
-                    <li>{{ flag.flag_info }}: <strong>{{ "1" if flag.id in session.found_flags else "0" }}/1</strong></li>
+                {% for flag in flag_data['details']['business'] %}
+                    <li>
+                        {% if flag.hint %}
+                            <button class="btn btn-info btn-sm me-2" 
+                                    onclick="toggleHint('business_hint_{{ flag.id }}')"
+                                    type="button">
+                                Show Hint
+                            </button>
+                        {% endif %}
+                        {{ flag.info }}: <strong>{{ 1 if flag.found else 0 }}/1</strong>
+                        {% if flag.hint %}
+                            <div id="business_hint_{{ flag.id }}" class="hint-content mt-2" style="display: none;">
+                                {{ flag.hint }}
+                            </div>
+                        {% endif %}
+                    </li>
                 {% endfor %}
             </ul>
         {% endif %}
@@ -480,5 +562,14 @@
             createWhiteBoxVisualization();
         }
     });
+
+    function toggleHint(hintId) {
+    const hintElement = document.getElementById(hintId);
+    if (hintElement.style.display === 'none') {
+        hintElement.style.display = 'block';
+    } else {
+        hintElement.style.display = 'none';
+    }
+}
 </script>
 {% endblock %}
