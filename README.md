@@ -1,6 +1,7 @@
 # Vulnerable Web Application
 
 A deliberately vulnerable web application designed for educational purposes, specifically for beginners to practice web application security testing skills. This project was created by an IT penetration testing student.
+
 ## Currently Implemented Vulnerabilities
 ```
 * SQL Injection (SQLi)
@@ -10,9 +11,24 @@ A deliberately vulnerable web application designed for educational purposes, spe
 * Business Logic Flaws
 ```
 Each vulnerability has an associated CTF-style flag to capture.
+
+Any Brute forcing of username and password uses the PortSwigger Username and password list which can be found here:
+```
+https://portswigger.net/web-security/authentication/auth-lab-usernames
+https://portswigger.net/web-security/authentication/auth-lab-passwords
+```
+
 Disclaimer: This application was created for educational purposes only. As a student project, some vulnerabilities may not perfectly mirror real-world scenarios, and there might be unintended bugs.
 
 ## Setup Instructions
+
+### Option 1: Docker Setup (Recommended)
+```
+git clone https://github.com/FjolsvinAvJotenheimr/vwa.git
+cd vwa
+docker compose up -d
+```
+### Option 2: Manuel Setup
 ### Initialize Virtual Environment
 ```
 python3 -m venv venv
@@ -20,13 +36,11 @@ source venv/bin/activate
 ```
 ### Install Dependencies
 ```
-pip install pycryptodome
-pip install flask
-pip install base58
+pip install -r requirements.txt
 ```
 ### Run the Application
 ```
-python3 run.py
+python3 main.py
 ```
 
 ## Known Issues
