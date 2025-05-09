@@ -30,7 +30,7 @@ This application is intended **solely for educational use** in controlled enviro
 
 ```bash
 git clone https://github.com/Adam-Tew/Vulnerable-Web-Application.git
-cd vwa
+cd Vulnerable-Web-Application
 docker compose up -d
 ```
 
