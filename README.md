@@ -1,6 +1,6 @@
 # Vulnerable Web Application
 
-A deliberately vulnerable web application designed for **educational purposes**, specifically tailored for beginners to practice web application security testing. This project was created as part of a student thesis in IT security and penetration testing.
+A deliberately vulnerable web application designed for **educational purposes**, specifically tailored for beginners to practice web application security testing. This project was created as part of a student thesis in IT security and penetration testing. This web app was made by a beginner in programming and appsec, there's bound to be buggs or programming mistakes, keep this in mind as it's a work in progress.
 
 ## Implemented Vulnerabilities
 
@@ -42,6 +42,7 @@ docker compose up -d
 python3 -m venv venv
 source venv/bin/activate
 ```
+The applikation will be avaiable at: http://127.0.0.1:5000
 
 #### Install Dependencies
 
