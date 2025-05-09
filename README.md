@@ -29,7 +29,7 @@ This application is intended **solely for educational use** in controlled enviro
 ### Option 1: Docker Setup (Recommended)
 
 ```bash
-git clone https://github.com/FjolsvinAvJotenheimr/vwa.git
+git clone https://github.com/Adam-Tew/Vulnerable-Web-Application.git
 cd vwa
 docker compose up -d
 ```
