@@ -2,6 +2,15 @@
 
 A deliberately vulnerable web application designed for **educational purposes**, specifically tailored for beginners to practice web application security testing. This project was created as part of a student thesis in IT security and penetration testing. This web app was made by a beginner in programming and appsec, there's bound to be buggs or programming mistakes, keep this in mind as it's a work in progress.
 
+## Preview
+
+### Home Page
+![Home Page](images/homepage.png)
+
+### Flag Submission Page
+![Flag Submission](images/flagpage.png)
+
+
 ## Implemented Vulnerabilities
 
 The application currently includes the following vulnerabilities:
